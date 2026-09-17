@@ -246,6 +246,17 @@ pre.code { background: var(--ground-2); border: 1px solid var(--rule); padding: 
   .row--hover, .tier { transition: none; }
 }
 
+/* print: a printed page has no scroll position, so the scroll-driven ember overlay would freeze at
+   zero. Always print the fully drawn graded spire instead. */
+@media print {
+  .js .ledger::before {
+    background: linear-gradient(to top, var(--rule), var(--ink-dim) 55%, var(--ember) 88%, var(--ember-hi));
+    animation: none;
+    transform: none;
+  }
+  .js .ledger::after { display: none; }
+}
+
 /* Wave 3 fixes: keep ledger row numbers on one line; let the topology diagram scroll on phones. */
 .tbl td:first-child, .tbl th:first-child { white-space: nowrap; }
 .diagram { display: block; width: 100%; max-width: 40rem; height: auto; }
