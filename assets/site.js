@@ -80,4 +80,48 @@
   for (var a = 0; a < ascents.length; a++) { io.observe(ascents[a]); }
   /* Safety: never leave tiers hidden if the observer does not fire (e.g. printing). */
   window.setTimeout(revealAll, 2500);
+
+  /* ---- scroll-driven center spire animation ---- */
+  var ledgers = document.querySelectorAll('.ledger');
+  if (ledgers.length) {
+    var ticking = false;
+    function updateSpireScroll() {
+      ticking = false;
+      if (reduced) {
+        for (var i = 0; i < ledgers.length; i++) {
+          ledgers[i].style.setProperty('--spire-progress', '1');
+        }
+        return;
+      }
+      var winH = window.innerHeight || document.documentElement.clientHeight || 1;
+      var docH = document.documentElement.scrollHeight || document.body.scrollHeight || 1;
+      var maxScroll = Math.max(1, docH - winH);
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      var progress = Math.max(0, Math.min(1, scrollY / maxScroll));
+
+      for (var j = 0; j < ledgers.length; j++) {
+        ledgers[j].style.setProperty('--spire-progress', progress.toFixed(4));
+      }
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        if (typeof window.requestAnimationFrame === 'function') {
+          window.requestAnimationFrame(updateSpireScroll);
+        } else {
+          updateSpireScroll();
+        }
+      }
+    }
+
+    if (reduced) {
+      updateSpireScroll();
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      updateSpireScroll();
+    }
+  }
 })();
+

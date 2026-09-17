@@ -47,10 +47,27 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 1.5rem 0; }
 .ledger { position: relative; }
 .ledger::before {
   content: ""; position: absolute; top: 0; bottom: 0; left: .25rem; width: 1px; pointer-events: none;
-  background: linear-gradient(to top, var(--rule), var(--ink-dim) 55%, var(--ember) 88%, var(--ember-hi));
-  transform-origin: bottom; animation: spire-draw calc(900ms * var(--motion)) cubic-bezier(.2,.7,.2,1) both;
+  background: var(--rule);
 }
-@keyframes spire-draw { from { transform: scaleY(0); } to { transform: none; } }
+.ledger::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: .25rem; width: 2px; margin-left: -0.5px; pointer-events: none;
+  background: linear-gradient(to bottom, var(--ember), var(--ember-hi));
+  transform-origin: top;
+  transform: scaleY(var(--spire-progress, 0));
+  will-change: transform;
+  box-shadow: 0 0 6px var(--ember-hi);
+  z-index: 2;
+}
+@supports (animation-timeline: scroll()) {
+  .ledger::after {
+    animation: spire-scroll linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes spire-scroll {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
 .row { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem 2rem; padding: 1.5rem 0 1.5rem 1.25rem; border-bottom: 1px solid var(--rule); }
 .row--first { border-top: 1px solid var(--rule); }
 .row > .label { font: 500 .75rem/1.5 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-dim); padding-top: .35rem; min-width: 0; overflow-wrap: anywhere; }
@@ -64,6 +81,7 @@ section.row > .body > :last-child { margin-bottom: 0; }
 @media (min-width: 46rem) {
   .page { padding: 0 2rem 5rem; }
   .ledger::before { left: calc(var(--spire-x) - 1rem); }
+  .ledger::after { left: calc(var(--spire-x) - 1rem); }
   .row { grid-template-columns: calc(var(--spire-x) - 2rem) minmax(0, 1fr); padding-left: 0; }
   .row > .label { text-align: right; }
 }
@@ -216,7 +234,8 @@ pre.code { background: var(--ground-2); border: 1px solid var(--rule); padding: 
 
 /* reduced motion: final state immediately */
 @media (prefers-reduced-motion: reduce) {
-  .ledger::before, .js .ascent.is-in .tier, .js .step.is-new .decision > svg, .stamp[data-print] > svg { animation: none !important; }
+  .ledger::before, .ledger::after, .js .ascent.is-in .tier, .js .step.is-new .decision > svg, .stamp[data-print] > svg { animation: none !important; }
+  .ledger::after { transform: scaleY(1) !important; }
   .js .ascent[data-reveal] .tier { opacity: 1; transform: none; }
   .row--hover, .tier { transition: none; }
 }
