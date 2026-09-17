@@ -47,9 +47,15 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 1.5rem 0; }
 .ledger { position: relative; }
 .ledger::before {
   content: ""; position: absolute; top: 0; bottom: 0; left: .25rem; width: 1px; pointer-events: none;
-  background: var(--rule);
+  background: linear-gradient(to top, var(--rule), var(--ink-dim) 55%, var(--ember) 88%, var(--ember-hi));
+  transform-origin: bottom; animation: spire-draw calc(900ms * var(--motion)) cubic-bezier(.2,.7,.2,1) both;
 }
-.ledger::after {
+@keyframes spire-draw { from { transform: scaleY(0); } to { transform: none; } }
+/* Scroll-driven enhancement. The graded static spire above is the no-script and older-browser
+   fallback and stays fully drawn; when the shell script has run, the ember overlay below becomes the
+   visible line and the static spire yields to a plain rule. */
+.js .ledger::before { background: var(--rule); animation: none; }
+.js .ledger::after {
   content: ""; position: absolute; top: 0; bottom: 0; left: .25rem; width: 2px; margin-left: -0.5px; pointer-events: none;
   background: linear-gradient(to bottom, var(--ember), var(--ember-hi));
   transform-origin: top;
@@ -59,7 +65,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 1.5rem 0; }
   z-index: 2;
 }
 @supports (animation-timeline: scroll()) {
-  .ledger::after {
+  .js .ledger::after {
     animation: spire-scroll linear both;
     animation-timeline: scroll(root);
   }
@@ -81,7 +87,7 @@ section.row > .body > :last-child { margin-bottom: 0; }
 @media (min-width: 46rem) {
   .page { padding: 0 2rem 5rem; }
   .ledger::before { left: calc(var(--spire-x) - 1rem); }
-  .ledger::after { left: calc(var(--spire-x) - 1rem); }
+  .js .ledger::after { left: calc(var(--spire-x) - 1rem); }
   .row { grid-template-columns: calc(var(--spire-x) - 2rem) minmax(0, 1fr); padding-left: 0; }
   .row > .label { text-align: right; }
 }

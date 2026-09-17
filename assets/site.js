@@ -64,22 +64,24 @@
   function revealAll() {
     for (var i = 0; i < ascents.length; i++) { ascents[i].classList.add('is-in'); }
   }
-  if (!ascents.length) { return; }
-  if (reduced || typeof window.IntersectionObserver !== 'function') {
-    revealAll();
-    return;
-  }
-  var io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      if (entries[i].isIntersecting) {
-        entries[i].target.classList.add('is-in');
-        io.unobserve(entries[i].target);
-      }
+  /* Only the reveal below needs an ascent list; pages without one must still run the spire setup. */
+  if (ascents.length) {
+    if (reduced || typeof window.IntersectionObserver !== 'function') {
+      revealAll();
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            entries[i].target.classList.add('is-in');
+            io.unobserve(entries[i].target);
+          }
+        }
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+      for (var a = 0; a < ascents.length; a++) { io.observe(ascents[a]); }
+      /* Safety: never leave tiers hidden if the observer does not fire (e.g. printing). */
+      window.setTimeout(revealAll, 2500);
     }
-  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
-  for (var a = 0; a < ascents.length; a++) { io.observe(ascents[a]); }
-  /* Safety: never leave tiers hidden if the observer does not fire (e.g. printing). */
-  window.setTimeout(revealAll, 2500);
+  }
 
   /* ---- scroll-driven center spire animation ---- */
   var ledgers = document.querySelectorAll('.ledger');
@@ -95,9 +97,11 @@
       }
       var winH = window.innerHeight || document.documentElement.clientHeight || 1;
       var docH = document.documentElement.scrollHeight || document.body.scrollHeight || 1;
-      var maxScroll = Math.max(1, docH - winH);
       var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-      var progress = Math.max(0, Math.min(1, scrollY / maxScroll));
+      /* A page with nothing to scroll has no scroll position to derive progress from, so show the
+         full spire rather than an empty one. */
+      var maxScroll = docH - winH;
+      var progress = maxScroll > 1 ? Math.max(0, Math.min(1, scrollY / maxScroll)) : 1;
 
       for (var j = 0; j < ledgers.length; j++) {
         ledgers[j].style.setProperty('--spire-progress', progress.toFixed(4));
@@ -124,4 +128,3 @@
     }
   }
 })();
-
