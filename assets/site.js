@@ -125,6 +125,12 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll, { passive: true });
       updateSpireScroll();
+      /* The first measurement can be taken before layout settles (fonts, images, wrapping), and a
+         page that then shrinks to no scrollable range would keep a stale progress with no scroll
+         event left to correct it. Recompute whenever the document height changes. */
+      if (typeof window.ResizeObserver === 'function') {
+        new ResizeObserver(updateSpireScroll).observe(document.documentElement);
+      }
     }
   }
 })();
